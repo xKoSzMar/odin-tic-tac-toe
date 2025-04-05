@@ -8,6 +8,41 @@
     <script src="./scripts/index.js" defer></script>
   </head>
   <body>
-    <h1>There are no styles yet. Open the console to play the game.</h1>
+    <div id="main">
+      <div id="player-info">
+        <h1 class="player-name current-player"></h1>
+        <h1 class="player-name"></h1>
+        <h2 class="player-score"></h2>
+        <h2 class="player-score"></h2>
+        <h2 class="player-mark"></h2>
+        <h2 class="player-mark"></h2>
+      </div>
+      <div id="board"></div>
+    </div>
+    <div id="form-container">
+      <form>
+        <h1>Player 1:</h1>
+        <div>
+          <label for="p1-name">Name:</label>
+          <input type="text" id="p1-name" name="p1-name" value="" />
+          <label for="p1-mark">Mark:</label>
+          <select name="p1-mark" id="p1-mark">
+            <option value="x" selected>x</option>
+            <option value="o">o</option>
+          </select>
+        </div>
+        <h1>Player 2:</h1>
+        <div>
+          <label for="p2-name">Name:</label>
+          <input type="text" id="p2-name" name="p2-name" value="" />
+          <label for="p2-mark">Mark:</label>
+          <select name="p2-mark" id="p2-mark">
+            <option value="x">x</option>
+            <option value="o" selected>o</option>
+          </select>
+        </div>
+        <button type="button" id="play-btn" disabled>Play</button>
+      </form>
+    </div>
   </body>
 </html>
