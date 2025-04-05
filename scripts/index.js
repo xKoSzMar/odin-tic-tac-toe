@@ -7,7 +7,9 @@ const ticTacToe = (function () {
       board[i] = [];
 
       for (let j = 0; j < 3; j++) {
-        board[i][j] = "";
+        const div = document.createElement("div");
+        div.className = "empty-cell";
+        board[i][j] = div;
       }
     }
 
@@ -17,48 +19,48 @@ const ticTacToe = (function () {
   // Reset board
   const resetBoard = () => {
     board = createBoard();
+    refDOM.resetBoard();
+    refDOM.addBoard();
+    refDOM.displayPlayers();
     moveCounter = 0;
   };
 
   // Round finisher
-  const finishRound = (getName, mark, getScore, addScore) => {
+  const finishRound = (getName, addScore) => {
     addScore();
+    alert(`Player ${getName()} has won this round!`);
     resetBoard();
-    return `Player ${getName()} with ${mark} mark has won! Total score of ${getScore()} points.`;
   };
 
   // Win conditions
-  const checkWinConditions = ({ getName, getMark, getScore, addScore }) => {
-    const mark = getMark();
-    console.log(moveCounter);
-
-    if (board[1][1] === mark) {
+  const checkWinConditions = ({ getName, addScore }, mark) => {
+    if (board[1][1].className === mark) {
       if (
-        (board[0][1] === mark && board[2][1] === mark) ||
-        (board[0][2] === mark && board[2][0] === mark) ||
-        (board[1][0] === mark && board[1][2] === mark) ||
-        (board[0][0] === mark && board[2][2] === mark)
+        (board[0][1].className === mark && board[2][1].className === mark) ||
+        (board[0][2].className === mark && board[2][0].className === mark) ||
+        (board[1][0].className === mark && board[1][2].className === mark) ||
+        (board[0][0].className === mark && board[2][2].className === mark)
       ) {
-        console.log(finishRound(getName, mark, getScore, addScore));
+        finishRound(getName, addScore);
       }
-    } else if (board[0][0] === mark) {
+    } else if (board[0][0].className === mark) {
       if (
-        (board[0][1] === mark && board[0][2] === mark) ||
-        (board[1][0] === mark && board[2][0] === mark)
+        (board[0][1].className === mark && board[0][2].className === mark) ||
+        (board[1][0].className === mark && board[2][0].className === mark)
       ) {
-        console.log(finishRound(getName, mark, getScore, addScore));
+        finishRound(getName, addScore);
       }
-    } else if (board[2][2] === mark) {
+    } else if (board[2][2].className === mark) {
       if (
-        (board[2][0] === mark && board[2][1] === mark) ||
-        (board[0][2] === mark && board[1][2] === mark)
+        (board[2][0].className === mark && board[2][1].className === mark) ||
+        (board[0][2].className === mark && board[1][2].className === mark)
       ) {
-        console.log(finishRound(getName, mark, getScore, addScore));
+        finishRound(getName, addScore);
       }
     }
 
     if (moveCounter === 9) {
-      console.log(`Tie!`);
+      alert(`Tie!`);
       resetBoard();
     }
   };
@@ -77,83 +79,149 @@ const ticTacToe = (function () {
     };
   };
 
-  // Add player to an array
-  const addPlayer = (player) => {
-    if (players.length < 2) {
-      players.push(player);
-    } else {
-      console.log("You can't add more than two players!");
-    }
-  };
-
   // Add player to the game
   const createPlayer = (name, mark) => {
-    if (players.length > 0) {
-      if (players[0].getMark() === mark) {
-        console.log(`The "${mark}" is already in usage`);
-        return;
-      } else if (players[0].getName() === name) {
-        console.log(`The "${name}" is already in usage`);
-        return;
-      }
-    }
+    const player = playerCreator();
 
-    if (mark === "x" || mark === "o") {
-      const player = playerCreator();
-      addPlayer(player(name, mark));
-    } else {
-      console.log("Please enter right mark!");
-    }
+    players.push(player(name, mark));
   };
 
   // Play round
-  const playRound = (row, column) => {
-    if (players.length === 2) {
-      if (
-        typeof row === "number" &&
-        typeof column === "number" &&
-        row >= 0 &&
-        row < 3 &&
-        column >= 0 &&
-        column < 3
-      ) {
-        if (board[row][column] === "") {
-          board[row][column] = players[currentPlayerIndex].getMark();
-          console.log(board);
-          moveCounter++;
-          checkWinConditions(players[currentPlayerIndex]);
+  const playRound = (mark) => {
+    requestAnimationFrame(() => {
+      moveCounter++;
+      checkWinConditions(players[currentPlayerIndex], mark);
 
-          if (currentPlayerIndex === 0) {
-            currentPlayerIndex = 1;
-          } else {
-            currentPlayerIndex = 0;
-          }
-        } else {
-          console.log("There is already a mark here!");
-        }
-      } else {
-        console.log("Wrong input! Please enter two numbers:[row],[column]");
-      }
-    } else {
-      console.log("There must me two players to play the game!");
-    }
+      currentPlayerIndex === 0
+        ? (currentPlayerIndex = 1)
+        : (currentPlayerIndex = 0);
+    });
   };
 
   // Game data
   let board = createBoard();
-  const getBoard = () => board;
   const players = [];
   let currentPlayerIndex = 0;
   let moveCounter = 0;
-  const getPlayers = () => {
-    for (let i = 0; i < players.length; i++) {
-      console.log({
-        name: players[i].getName(),
-        mark: players[i].getMark(),
-        score: players[i].getScore(),
+
+  const getBoard = () => board;
+
+  const getPlayer = (n) => {
+    return players[n];
+  };
+
+  const getCurrentPlayerIndex = () => currentPlayerIndex;
+
+  return {
+    getBoard,
+    createPlayer,
+    getPlayer,
+    playRound,
+    getCurrentPlayerIndex,
+  };
+})();
+
+const refDOM = (function () {
+  const formRefs = {
+    formContainer: document.querySelector("#form-container"),
+    from: document.querySelector("form"),
+    p1Name: document.querySelector("#p1-name"),
+    p1Mark: document.querySelector("#p1-mark"),
+    p2Name: document.querySelector("#p2-name"),
+    p2Mark: document.querySelector("#p2-mark"),
+    button: document.querySelector("#play-btn"),
+  };
+
+  const mainRefs = {
+    mainContainer: document.querySelector("#main"),
+    playerNameDisplays: document.querySelectorAll(".player-name"),
+    playerScoreDisplays: document.querySelectorAll(".player-score"),
+    playerMarkDisplays: document.querySelectorAll(".player-mark"),
+    boardContainer: document.querySelector("#board"),
+  };
+
+  const formValidation = () => {
+    if (
+      formRefs.p1Name.value !== "" &&
+      formRefs.p2Name.value !== "" &&
+      formRefs.p1Mark.value !== formRefs.p2Mark.value &&
+      formRefs.button.hasAttribute("disabled")
+    ) {
+      formRefs.button.removeAttribute("disabled");
+    } else {
+      formRefs.button.setAttribute("disabled", true);
+    }
+  };
+
+  const displayPlayers = () => {
+    for (let i = 0; i < 2; i++) {
+      mainRefs.playerNameDisplays[i].textContent = ticTacToe
+        .getPlayer(i)
+        .getName();
+
+      mainRefs.playerScoreDisplays[i].textContent = `Score: ${ticTacToe
+        .getPlayer(i)
+        .getScore()}`;
+
+      mainRefs.playerMarkDisplays[i].textContent = `Mark: ${ticTacToe
+        .getPlayer(i)
+        .getMark()}`;
+    }
+  };
+
+  const handleCellClick = (e) => {
+    if (e.target.classList.contains("empty-cell")) {
+      const currentPlayerMark = ticTacToe
+        .getPlayer(ticTacToe.getCurrentPlayerIndex())
+        .getMark();
+
+      currentPlayerMark === "x"
+        ? (e.target.className = "x-cell")
+        : (e.target.className = "o-cell");
+
+      requestAnimationFrame(() => {
+        ticTacToe.playRound(e.target.className);
+
+        for (let i = 0; i < 2; i++) {
+          mainRefs.playerNameDisplays[i].classList.toggle("current-player");
+        }
       });
     }
   };
 
-  return { getBoard, getPlayers, createPlayer, playRound };
+  const addBoard = () => {
+    const board = ticTacToe.getBoard();
+
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        mainRefs.boardContainer
+          .appendChild(board[i][j])
+          .addEventListener("click", (e) => handleCellClick(e));
+      }
+    }
+  };
+
+  const resetBoard = () => {
+    while (mainRefs.boardContainer.firstChild) {
+      mainRefs.boardContainer.removeChild(mainRefs.boardContainer.lastChild);
+    }
+  };
+
+  const startGame = () => {
+    // Change display
+    formRefs.formContainer.style.display = "none";
+    mainRefs.mainContainer.style.display = "flex";
+
+    // Add players
+    ticTacToe.createPlayer(formRefs.p1Name.value, formRefs.p1Mark.value);
+    ticTacToe.createPlayer(formRefs.p2Name.value, formRefs.p2Mark.value);
+
+    displayPlayers();
+    addBoard();
+  };
+
+  formRefs.from.addEventListener("change", () => formValidation());
+  formRefs.button.addEventListener("click", () => startGame());
+
+  return { addBoard, resetBoard, displayPlayers };
 })();
